@@ -1,11 +1,11 @@
 version: '2.1'
 
 services:
-  mai-db-node-ex01:
+  mai-db-node-ex00:
     build:
       context: mariadb
       dockerfile: Dockerfile
-    container_name: mai-db-node-ex01
+    container_name: mai-db-node-ex00
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: archdb
@@ -33,7 +33,7 @@ services:
       dockerfile: Dockerfile
     container_name: my_service
     environment:
-      - DB_HOST=mai-db-node-ex01
+      - DB_HOST=mai-db-node-ex00
       - DB_PORT=3306
       - DB_LOGIN=stud
       - DB_PASSWORD=stud
