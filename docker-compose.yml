@@ -1,11 +1,11 @@
 version: '2.1'
 
 services:
-  mai-db-node-ex01:
+  mai-db-node-ex00:
     build:
       context: mariadb
       dockerfile: Dockerfile
-    container_name: mai-db-node-ex01
+    container_name: mai-db-node-ex00
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: archdb
@@ -25,7 +25,7 @@ services:
       timeout: 20s
       retries: 5
     volumes:
-      - db-node-ex01-data:/var/lib/mysql
+      - db-node-ex00-data:/var/lib/mysql
 
   my_service:
     build:
@@ -33,7 +33,7 @@ services:
       dockerfile: Dockerfile
     container_name: my_service
     environment:
-      - DB_HOST=mai-db-node-ex01
+      - DB_HOST=mai-db-node-ex00
       - DB_PORT=3306
       - DB_LOGIN=stud
       - DB_PASSWORD=stud
@@ -43,7 +43,7 @@ services:
     networks:
       - arch-network
     depends_on:
-      mai-db-node-ex01:
+      mai-db-node-ex00:
         condition: service_healthy
   other_server:
     build:
@@ -58,7 +58,7 @@ services:
       - arch-network
 
 volumes:
-  db-node-ex01-data:
+  db-node-ex00-data:
 
 networks:
   arch-network:
