@@ -4,6 +4,7 @@ project(hl_server C CXX)
 
 SET (EXAMPLE_BINARY "hl_mai_lab_00")
 SET (OTHER_SERVICE "other_service")
+SET (CATALOGUE_SERVICE "catalogue_service")
 
 find_package(OpenSSL)
 find_package(Threads)
@@ -35,6 +36,28 @@ set_target_properties(${EXAMPLE_BINARY} PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(${EXAMPLE_BINARY} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 
 target_link_libraries(${EXAMPLE_BINARY} PRIVATE 
+                             ${CMAKE_THREAD_LIBS_INIT} 
+                             ${Poco_LIBRARIES}
+                             "PocoData"
+                             "PocoDataMySQL"
+                             "mysqlclient"
+                             ZLIB::ZLIB)
+
+
+
+
+add_executable(${CATALOGUE_SERVICE} service_main.cpp 
+                                 config/config.cpp 
+                                 database/database.cpp
+                                 database/service.cpp)
+
+
+target_include_directories(${CATALOGUE_SERVICE} PRIVATE "${CMAKE_BINARY_DIR}")
+target_compile_options(${CATALOGUE_SERVICE} PRIVATE -Wall -Wextra -pedantic -Werror )
+set_target_properties(${CATALOGUE_SERVICE} PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(${CATALOGUE_SERVICE} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+
+target_link_libraries(${CATALOGUE_SERVICE} PRIVATE 
                              ${CMAKE_THREAD_LIBS_INIT} 
                              ${Poco_LIBRARIES}
                              "PocoData"

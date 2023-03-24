@@ -232,7 +232,7 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
 
-            insert << "INSERT INTO User (first_name,last_name,email,login,password) VALUES(?, ?, ?, ?, ?, ?)",
+            insert << "INSERT INTO User (first_name,last_name,email,login,password) VALUES(?, ?, ?, ?, ?)",
                 use(_first_name),
                 use(_last_name),
                 use(_email),
