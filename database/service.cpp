@@ -80,9 +80,9 @@ namespace database
         service.name() = object->getValue<std::string>("name");
         service.category() = object->getValue<std::string>("category");
         service.method() = object->getValue<std::string>("method");
-        service.descrition() = object->getValue<std::string>("descrition");
-        service.schedule() = object->getValue<std::time>("schedule");
-        service.price() = object->getValue<std::time>("price");
+        service.description() = object->getValue<std::string>("description");
+        service.schedule() = object->getValue<std::string>("schedule");
+        service.price() = object->getValue<std::string>("price");
         service.login() = object->getValue<std::string>("login");
         service.password() = object->getValue<std::string>("password");
 

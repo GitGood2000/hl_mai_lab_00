@@ -42,6 +42,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /service:
     post:
       summary: Добавление новой услуги
       parameters:

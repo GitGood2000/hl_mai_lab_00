@@ -40,14 +40,14 @@ using Poco::Util::ServerApplication;
 #include "http_request_factory.h"
 #include "../database/service.h"
 
-class HTTPWebServer : public Poco::Util::ServerApplication
+class HTTPServiceServer : public Poco::Util::ServerApplication
 {
 public:
-    HTTPWebServer() : _helpRequested(false)
+    HTTPServiceServer() : _helpRequested(false)
     {
     }
 
-    ~HTTPWebServer()
+    ~HTTPServiceServer()
     {
     }
 
@@ -68,7 +68,7 @@ protected:
         if (!_helpRequested)
         {
             database::Service::init();
-            ServerSocket svs(Poco::Net::SocketAddress("0.0.0.0", 8080));
+            ServerSocket svs(Poco::Net::SocketAddress("0.0.0.0", 8082));
             HTTPServer srv(new HTTPRequestFactory(DateTimeFormat::SORTABLE_FORMAT), svs, new HTTPServerParams);
             srv.start();
             waitForTerminationRequest();

@@ -4,7 +4,7 @@ export DB_LOGIN=stud
 export DB_PASSWORD=stud
 export DB_DATABASE=archdb
 
-mkdir -p build
+#mkdir -p build
 
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 

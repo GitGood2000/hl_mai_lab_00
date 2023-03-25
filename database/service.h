@@ -45,6 +45,7 @@ namespace database
             std::string &password();
 
             static void init();
+            static std::optional<long> auth(std::string &login, std::string &password);
             static std::vector<Service> read_all();
             void save_to_mysql();
 
