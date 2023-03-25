@@ -96,13 +96,13 @@ paths:
           type: string
       responses:
         '200':
-          description: Идентификатор, добавленного пользователя
+          description: Идентификатор, добавленной услуги
           content:
             application/json:
               schema:
                 type: integer
         404:
-          description: Ошибка добавления пользователя
+          description: Ошибка добавления услуги
           content:
             application/json:
               schema:
