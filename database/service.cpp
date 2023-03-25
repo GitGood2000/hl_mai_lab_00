@@ -35,7 +35,7 @@ namespace database
                         << "`price` VARCHAR(256) NOT NULL,"
                         << "`login` VARCHAR(256) NOT NULL,"
                         << "`password` VARCHAR(256) NOT NULL,"
-                        << "PRIMARY KEY (`id`),KEY `categ` (`category`),KEY `login` (`login`));",
+                        << "PRIMARY KEY (`id`),KEY `categ` (`category`),KEY `log` (`login`));",
                 now;
         }
 
@@ -162,13 +162,15 @@ namespace database
 
     void Service::save_to_mysql()
     {
-
+        std::cout<<"save_to_mysql message 000";
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
+            
+            std::cout<<"save_to_mysql message 00";
 
-            insert << "INSERT INTO Service (id, name, category, method, description, schedule, price, login, password) VALUES(?, ?, ?, ?, ?, ?, ?)",
+            insert << "INSERT INTO Service (name,category,method,description,schedule,price,login,password) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
                 use(_name),
                 use(_category),
                 use(_method),
@@ -180,6 +182,7 @@ namespace database
 
             insert.execute();
 
+            std::cout<<"save_to_mysql message 0";
             Poco::Data::Statement select(session);
             select << "SELECT LAST_INSERT_ID()",
                 into(_id),

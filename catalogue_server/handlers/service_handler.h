@@ -1,5 +1,5 @@
-#ifndef USEHANDLER_H
-#define USEHANDLER_H
+#ifndef SERVICEHANDLER_H
+#define SERVICEHANDLER_H
 
 #include "Poco/Net/HTTPServer.h"
 #include "Poco/Net/HTTPRequestHandler.h"
@@ -83,18 +83,6 @@ private:
             return false;
         }
 
-        if (name.find(' ') != std::string::npos)
-        {
-            reason = "Name can't contain spaces";
-            return false;
-        }
-
-        if (name.find('\t') != std::string::npos)
-        {
-            reason = "Name can't contain spaces";
-            return false;
-        }
-
         return true;
     };
 
@@ -160,9 +148,6 @@ public:
                        HTTPServerResponse &response)
     {
         HTMLForm form(request, request.stream());
-        response.setChunkedTransferEncoding(true);
-        response.setContentType("application/json");
-        std::ostream &ostr = response.send();
         
         try
         {
@@ -171,7 +156,13 @@ public:
                 Poco::JSON::Array arr;
                 for (auto s : results)
                     arr.add(s.toJSON());
+                response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+                response.setChunkedTransferEncoding(true);
+                response.setContentType("application/json");
+                std::ostream &ostr = response.send();
                 Poco::JSON::Stringifier::stringify(arr, ostr);
+
+                return;
             }
             else if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST)
             {
@@ -179,10 +170,10 @@ public:
                 std::string host = "localhost";
                 std::string url;
                 if(std::getenv("SERVICE_HOST")!=nullptr) host = std::getenv("SERVICE_HOST");
-                url = "http://" + host+":8082/auth";
+                url = "http://" + host+":8080/auth";
 
 
-                if (form.has("name") && form.has("category") && form.has("method") && form.has("desctiption") && form.has("schedule") && form.has("price") && form.has("login") && form.has("password"))
+                if (form.has("name") && form.has("category") && form.has("method") && form.has("description") && form.has("schedule") && form.has("price") && form.has("login") && form.has("password"))
                 {
                     database::Service service;
                     service.name() = form.get("name");
@@ -193,14 +184,16 @@ public:
                     service.price() = form.get("price");
                     service.login() = form.get("login");
                     service.password() = form.get("password");
+                    std::cout<<"POST message 000";
+
                     if (do_get(url, service.get_login(), service.get_password())) // do authentificate
                     {
-
 
                         bool check_result = true;
                         std::string message;
                         std::string reason;
 
+                        std::cout<<"POST message 00";
                         if (!check_name(service.get_name(), reason))
                         {
                             check_result = false;
@@ -211,8 +204,11 @@ public:
 
                         if (check_result)
                         {
+                            std::cout<<"POST message 0";
                             service.save_to_mysql();
+                            std::cout<<"POST message 1";
                             response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+                            std::cout<<"POST message 2";
                             response.setChunkedTransferEncoding(true);
                             response.setContentType("application/json");
                             std::ostream &ostr = response.send();
@@ -221,6 +217,7 @@ public:
                         }
                         else
                         {
+                            std::cout<<"POST message 3";
                             response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
                             std::ostream &ostr = response.send();
                             ostr << message;
@@ -242,8 +239,9 @@ public:
         root->set("type", "/errors/not_found");
         root->set("title", "Internal exception");
         root->set("status", Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND);
-        root->set("detail", "request ot found");
+        root->set("detail", "request not found");
         root->set("instance", "/service");
+        std::ostream &ostr = response.send();
         Poco::JSON::Stringifier::stringify(root, ostr);
     }
 

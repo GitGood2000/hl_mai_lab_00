@@ -1,5 +1,5 @@
-#ifndef HTTPWEBSERVER_H
-#define HTTPWEBSERVER_H
+#ifndef HTTPSERVICESERVER_H
+#define HTTPSERVICESERVER_H
 
 #include "Poco/Net/HTTPServer.h"
 #include "Poco/Net/HTTPRequestHandler.h"
@@ -80,4 +80,4 @@ protected:
 private:
     bool _helpRequested;
 };
-#endif // !HTTPWEBSERVER
+#endif // !HTTPSERVICESERVER_H
