@@ -38,7 +38,7 @@ using Poco::Util::OptionSet;
 using Poco::Util::OptionCallback;
 using Poco::Util::HelpFormatter;
 
-#include "handlers/service_handler.h"
+#include "handlers/order_handler.h"
 
 
 class HTTPRequestFactory: public HTTPRequestHandlerFactory
@@ -54,9 +54,9 @@ public:
     {
 
         std::cout << "request:" << request.getURI()<< std::endl;
-        if (hasSubstr(request.getURI(),"/service") ||
-            hasSubstr(request.getURI(),"/showlist")) 
-            return new ServiceHandler(_format);
+        if (hasSubstr(request.getURI(),"/order") ||
+            hasSubstr(request.getURI(),"/search")) 
+            return new OrderHandler(_format);
         return 0;
     }
 

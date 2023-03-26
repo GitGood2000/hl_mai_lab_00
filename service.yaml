@@ -10,7 +10,6 @@ paths:
   /showlist:
     get:
       summary: Вывести список всех услуг
-      parameters:
       responses:
         '200':
           description: The users for the provided masks
@@ -30,22 +29,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /auth:
-    get:
-      summary: Проверка аутентификации
-      responses:
-        '200':
-          description: User ID
-          content:
-            application/json:
-              schema:
-               type: string
-        401:
-          description: Not authentication
-          content:
-            application/json:
-              schema:
-                type: string
   /service:
     post:
       summary: Добавление новой услуги
@@ -86,12 +69,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: user_id
-        description: Идентификатор пользователя
-        in: query
-        required: true
-        schema:
-          type: integer
       responses:
         '200':
           description: Идентификатор, добавленной услуги
@@ -146,10 +123,8 @@ components:
           type: string
         price:
           type: string
-        login:
-          type: string
-        password:
-          type: string
+        user_id:
+          type: integer
     Error:
       type: object
       required:

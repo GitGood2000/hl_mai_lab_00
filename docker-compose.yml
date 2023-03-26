@@ -27,54 +27,54 @@ services:
     volumes:
       - db-node-ex00-data:/var/lib/mysql
 
-  # my_service:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: my_service
-  #   environment:
-  #     - DB_HOST=mai-db-node-ex00
-  #     - DB_PORT=3306
-  #     - DB_LOGIN=stud
-  #     - DB_PASSWORD=stud
-  #     - DB_DATABASE=archdb
-  #   ports:
-  #     - 8080:8080
-  #   networks:
-  #     - arch-network
-  #   depends_on:
-  #     mai-db-node-ex00:
-  #       condition: service_healthy
-  # other_server:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: other_server
-  #   environment:
-  #     - SERVICE_HOST=my_service
-  #   ports:
-  #     - 8081:8081
-  #   networks:
-  #     - arch-network
-  # catalogue_service:
-  #   build:
-  #     context: .
-  #     dockerfile: catalogue_service/Dockerfile
-  #   container_name: catalogue_service
-  #   environment:
-  #     - DB_HOST=mai-db-node-ex00
-  #     - DB_PORT=3306
-  #     - DB_LOGIN=stud
-  #     - DB_PASSWORD=stud
-  #     - DB_DATABASE=archdb
-  #     - SERVICE_HOST=my_service
-  #   ports:
-  #     - 8082:8082
-  #   networks:
-  #     - arch-network
-  #   depends_on:
-  #     mai-db-node-ex00:
-  #       condition: service_healthy
+  my_service:
+    build:
+      context: my_service
+      dockerfile: Dockerfile
+    container_name: my_service
+    environment:
+      - DB_HOST=mai-db-node-ex00
+      - DB_PORT=3306
+      - DB_LOGIN=stud
+      - DB_PASSWORD=stud
+      - DB_DATABASE=archdb
+    ports:
+      - 8080:8080
+    networks:
+      - arch-network
+    depends_on:
+      mai-db-node-ex00:
+        condition: service_healthy
+  order_server:
+    build:
+      context: order_server
+      dockerfile: Dockerfile
+    container_name: order_server
+    environment:
+      - SERVICE_HOST=my_service
+    ports:
+      - 8081:8081
+    networks:
+      - arch-network
+  catalogue_server:
+    build:
+      context: catalogue_server
+      dockerfile: Dockerfile
+    container_name: catalogue_server
+    environment:
+      - DB_HOST=mai-db-node-ex00
+      - DB_PORT=3306
+      - DB_LOGIN=stud
+      - DB_PASSWORD=stud
+      - DB_DATABASE=archdb
+      - SERVICE_HOST=my_service
+    ports:
+      - 8082:8082
+    networks:
+      - arch-network
+    depends_on:
+      mai-db-node-ex00:
+        condition: service_healthy
 
 volumes:
   db-node-ex00-data:

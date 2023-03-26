@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.2)
 project(hl_server C CXX)
 
 SET (EXAMPLE_BINARY "hl_mai_lab_00")
-SET (OTHER_SERVICE "other_service")
+SET (ORDER_SERVICE "order_service")
 SET (CATALOGUE_SERVICE "catalogue_service")
+
 
 find_package(OpenSSL)
 find_package(Threads)
@@ -46,6 +47,30 @@ target_link_libraries(${EXAMPLE_BINARY} PRIVATE
 
 
 
+
+add_executable(${ORDER_SERVICE} order_main.cpp 
+                                 config/config.cpp 
+                                 database/database.cpp
+                                 database/order.cpp)
+
+
+target_include_directories(${ORDER_SERVICE} PRIVATE "${CMAKE_BINARY_DIR}")
+target_compile_options(${ORDER_SERVICE} PRIVATE -Wall -Wextra -pedantic -Werror )
+set_target_properties(${ORDER_SERVICE} PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(${ORDER_SERVICE} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+
+target_link_libraries(${ORDER_SERVICE} PRIVATE 
+                             ${CMAKE_THREAD_LIBS_INIT} 
+                             ${Poco_LIBRARIES}
+                             "PocoData"
+                             "PocoDataMySQL"
+                             "mysqlclient"
+                             ZLIB::ZLIB)
+
+
+
+
+
 add_executable(${CATALOGUE_SERVICE} service_main.cpp 
                                  config/config.cpp 
                                  database/database.cpp
@@ -64,25 +89,5 @@ target_link_libraries(${CATALOGUE_SERVICE} PRIVATE
                              "PocoDataMySQL"
                              "mysqlclient"
                              ZLIB::ZLIB)
-
-
-
-
-add_executable(${OTHER_SERVICE} other_main.cpp)
-target_include_directories(${OTHER_SERVICE} PRIVATE "${CMAKE_BINARY_DIR}")
-target_compile_options(${OTHER_SERVICE} PRIVATE -Wall -Wextra -pedantic -Werror )
-set_target_properties(${OTHER_SERVICE} PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(${OTHER_SERVICE} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
-
-target_link_libraries(${OTHER_SERVICE} PRIVATE 
-                             ${CMAKE_THREAD_LIBS_INIT} 
-                             ${Poco_LIBRARIES}
-                             "PocoData"
-                             "PocoDataMySQL"
-                             "mysqlclient"
-                             ZLIB::ZLIB)
-
-
-
 
 

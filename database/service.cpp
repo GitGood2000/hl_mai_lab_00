@@ -87,8 +87,9 @@ namespace database
                 into(a._description),
                 into(a._schedule),
                 into(a._price),
-                into(a._user_id);
+                into(a._user_id),
                 range(0, 1); //  iterate over result set one row at a time
+
 
             while (!select.done())
             {
@@ -113,7 +114,6 @@ namespace database
 
     Service Service::save_to_mysql(long user_id)
     {
-        std::cout<<"save_to_mysql message 000";
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
@@ -121,20 +121,18 @@ namespace database
             
             Service serv_user;
 
-            std::cout<<"save_to_mysql message 00";
 
-            insert << "INSERT INTO Service (name,category,method,description,schedule,price,user_id) VALUES(?, ?, ?, ?, ?, ?, ?)",
+            insert << "INSERT INTO `Service` (name,category,method,description,schedule,price,user_id) VALUES(?, ?, ?, ?, ?, ?, ?)",
                 use(_name),
                 use(_category),
                 use(_method),
                 use(_description),
                 use(_schedule),
                 use(_price),
-                use(_user_id);
+                use(user_id);
 
             insert.execute();
 
-            std::cout<<"save_to_mysql message 0";
             Poco::Data::Statement select(session);
             select << "SELECT LAST_INSERT_ID()",
                 into(serv_user._id),
