@@ -86,18 +86,12 @@ paths:
         required: true
         schema:
           type: string
-      - name: login
-        description: login пользователя
+      - name: user_id
+        description: Идентификатор пользователя
         in: query
         required: true
         schema:
-          type: string
-      - name: password
-        description: пароль пользователя
-        in: query
-        required: true
-        schema:
-          type: string
+          type: integer
       responses:
         '200':
           description: Идентификатор, добавленной услуги
@@ -136,8 +130,7 @@ components:
         - desctiption
         - schedule
         - price
-        - login
-        - password
+        - user_id
       properties:
         id:
           $ref: '#/components/schemas/service_id'

@@ -8,6 +8,6 @@ export DB_DATABASE=archdb
 
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-./build/hl_mai_lab_00
-#./build/catalogue_service
+#./build/hl_mai_lab_00
+./build/catalogue_service
 

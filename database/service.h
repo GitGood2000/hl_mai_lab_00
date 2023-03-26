@@ -17,8 +17,7 @@ namespace database
             std::string _description;
             std::string _schedule;
             std::string _price;
-            std::string _login;
-            std::string _password;
+            long _user_id;
 
         public:
 
@@ -31,8 +30,6 @@ namespace database
             const std::string &get_description() const;
             const std::string &get_schedule() const;
             const std::string &get_price() const;
-            const std::string &get_login() const;
-            const std::string &get_password() const;
 
             long&        id();
             std::string &name();
@@ -41,13 +38,11 @@ namespace database
             std::string &description();
             std::string &schedule();
             std::string &price();
-            std::string &login();
-            std::string &password();
+            long&        user_id();
 
             static void init();
-            static std::optional<long> auth(std::string &login, std::string &password);
             static std::vector<Service> read_all();
-            void save_to_mysql();
+            Service save_to_mysql(long user_id);
 
             Poco::JSON::Object::Ptr toJSON() const;
 

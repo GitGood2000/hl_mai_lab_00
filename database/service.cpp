@@ -29,13 +29,16 @@ namespace database
             create_stmt << "CREATE TABLE IF NOT EXISTS `Service` (`id` INT NOT NULL AUTO_INCREMENT,"
                         << "`name` VARCHAR(256) NOT NULL,"
                         << "`category` VARCHAR(256) NOT NULL,"
-                        << "`method` VARCHAR(256) NOT NULL,"
-                        << "`description` VARCHAR(256) NOT NULL,"
-                        << "`schedule` VARCHAR(256) NOT NULL,"
-                        << "`price` VARCHAR(256) NOT NULL,"
-                        << "`login` VARCHAR(256) NOT NULL,"
-                        << "`password` VARCHAR(256) NOT NULL,"
-                        << "PRIMARY KEY (`id`),KEY `categ` (`category`),KEY `log` (`login`));",
+                        << "`method` VARCHAR(256) NULL,"
+                        << "`description` VARCHAR(256) NULL,"
+                        << "`schedule` VARCHAR(256) NULL,"
+                        << "`price` VARCHAR(256) NULL,"
+                        << "`user_id` INT NOT NULL,"
+                        << "PRIMARY KEY (`id`),KEY `categ` (`category`),"
+                        << "KEY `FK_User_id` (`user_id`),"
+                        << "CONSTRAINT `FK_user_id` "
+                        << "FOREIGN KEY (`user_id`) "
+                        << "REFERENCES  `User` (`id`));",
                 now;
         }
 
@@ -63,60 +66,9 @@ namespace database
         root->set("description", _description);
         root->set("schedule", _schedule);
         root->set("price", _price);
-        root->set("login", _login);
-        root->set("password", _password);
+        root->set("user_id", _user_id);
 
         return root;
-    }
-
-    Service Service::fromJSON(const std::string &str)
-    {
-        Service service;
-        Poco::JSON::Parser parser;
-        Poco::Dynamic::Var result = parser.parse(str);
-        Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
-
-        service.id() = object->getValue<long>("id");
-        service.name() = object->getValue<std::string>("name");
-        service.category() = object->getValue<std::string>("category");
-        service.method() = object->getValue<std::string>("method");
-        service.description() = object->getValue<std::string>("description");
-        service.schedule() = object->getValue<std::string>("schedule");
-        service.price() = object->getValue<std::string>("price");
-        service.login() = object->getValue<std::string>("login");
-        service.password() = object->getValue<std::string>("password");
-
-        return service;
-    }
-
-    std::optional<long> Service::auth(std::string &login, std::string &password)
-    {
-        try
-        {
-            Poco::Data::Session session = database::Database::get().create_session();
-            Poco::Data::Statement select(session);
-            long id;
-            select << "SELECT id FROM Service where login=? and password=?",
-                into(id),
-                use(login),
-                use(password),
-                range(0, 1); //  iterate over result set one row at a time
-
-            select.execute();
-            Poco::Data::RecordSet rs(select);
-            if (rs.moveFirst()) return id;
-        }
-
-        catch (Poco::Data::MySQL::ConnectionException &e)
-        {
-            std::cout << "connection:" << e.what() << std::endl;
-        }
-        catch (Poco::Data::MySQL::StatementException &e)
-        {
-
-            std::cout << "statement:" << e.what() << std::endl;
-        }
-        return {};
     }
 
     std::vector<Service> Service::read_all()
@@ -127,7 +79,7 @@ namespace database
             Statement select(session);
             std::vector<Service> result;
             Service a;
-            select << "SELECT id, name, category, method, description, schedule, price, login, password FROM Service",
+            select << "SELECT id, name, category, method, description, schedule, price, user_id FROM Service",
                 into(a._id),
                 into(a._name),
                 into(a._category),
@@ -135,8 +87,7 @@ namespace database
                 into(a._description),
                 into(a._schedule),
                 into(a._price),
-                into(a._login),
-                into(a._password),
+                into(a._user_id);
                 range(0, 1); //  iterate over result set one row at a time
 
             while (!select.done())
@@ -160,7 +111,7 @@ namespace database
         }
     }
 
-    void Service::save_to_mysql()
+    Service Service::save_to_mysql(long user_id)
     {
         std::cout<<"save_to_mysql message 000";
         try
@@ -168,31 +119,37 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
             
+            Service serv_user;
+
             std::cout<<"save_to_mysql message 00";
 
-            insert << "INSERT INTO Service (name,category,method,description,schedule,price,login,password) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
+            insert << "INSERT INTO Service (name,category,method,description,schedule,price,user_id) VALUES(?, ?, ?, ?, ?, ?, ?)",
                 use(_name),
                 use(_category),
                 use(_method),
                 use(_description),
                 use(_schedule),
                 use(_price),
-                use(_login),
-                use(_password);
+                use(_user_id);
 
             insert.execute();
 
             std::cout<<"save_to_mysql message 0";
             Poco::Data::Statement select(session);
             select << "SELECT LAST_INSERT_ID()",
-                into(_id),
+                into(serv_user._id),
                 range(0, 1); //  iterate over result set one row at a time
 
             if (!select.done())
             {
                 select.execute();
             }
+
+            serv_user._user_id = user_id;
+
             std::cout << "inserted:" << _id << std::endl;
+
+            return serv_user;
         }
         catch (Poco::Data::MySQL::ConnectionException &e)
         {
@@ -205,26 +162,6 @@ namespace database
             std::cout << "statement:" << e.what() << std::endl;
             throw;
         }
-    }
-
-    const std::string &Service::get_login() const
-    {
-        return _login;
-    }
-
-    const std::string &Service::get_password() const
-    {
-        return _password;
-    }
-
-    std::string &Service::login()
-    {
-        return _login;
-    }
-
-    std::string &Service::password()
-    {
-        return _password;
     }
 
     long Service::get_id() const
