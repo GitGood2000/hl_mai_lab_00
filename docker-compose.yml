@@ -45,11 +45,11 @@ services:
     depends_on:
       mai-db-node-ex00:
         condition: service_healthy
-  order_server:
+  catalogue_server:
     build:
-      context: order_server
+      context: catalogue_server
       dockerfile: Dockerfile
-    container_name: order_server
+    container_name: catalogue_server
     environment:
       - DB_HOST=mai-db-node-ex00
       - DB_PORT=3306
@@ -64,11 +64,11 @@ services:
     depends_on:
       mai-db-node-ex00:
         condition: service_healthy
-  catalogue_server:
+  order_server:
     build:
-      context: catalogue_server
+      context: order_server
       dockerfile: Dockerfile
-    container_name: catalogue_server
+    container_name: order_server
     environment:
       - DB_HOST=mai-db-node-ex00
       - DB_PORT=3306
