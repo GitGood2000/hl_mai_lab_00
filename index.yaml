@@ -139,6 +139,138 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /showlist:
+    get:
+      summary: Вывести список всех услуг
+      responses:
+        '200':
+          description: The users for the provided masks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/services'
+        404:
+          description: No user found for the provided mask
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /service:
+    post:
+      summary: Добавление новой услуги
+      parameters:
+      - name: name
+        description: Название услуги
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: category
+        description: Категория услуги
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: method
+        description: Способ получения услуги (дист\наяву)
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: description
+        description: Описание услуги
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: schedule
+        description: Расписание услуги
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: price
+        description: Цена услуги
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Идентификатор, добавленной услуги
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Ошибка добавления услуги
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /searchOrder:
+    get:
+      summary: Поиск Заказов по маске ID пользователя
+      responses:
+        '200':
+          description: The orders for the provided masks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/order'
+        404:
+          description: No user found for the provided mask
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /order:
+    post:
+      summary: Добавление услуги в заказ
+      parameters:
+      - name: service_id
+        description: идентификатор услуги
+        in: query
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Идентификатор, добавленного заказа
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Ошибка добавления заказа
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
     user_id:
@@ -170,6 +302,61 @@ components:
           type: string
         password:
           type: string
+    service_id:
+      description: Уникальный идентификатор услуги
+      type: integer
+    services:
+      type: array
+      items:
+        $ref: '#/components/schemas/service'
+    service:
+      type: object
+      required:
+        - id
+        - name
+        - category 
+        - method
+        - desctiption
+        - schedule
+        - price
+        - user_id
+      properties:
+        id:
+          $ref: '#/components/schemas/service_id'
+        name:
+          type: string
+        category:
+          type: string
+        method:
+          type: string
+        description:
+          type: string
+        schedule:
+          type: string
+        price:
+          type: string
+        user_id:
+          type: integer
+    order_id:
+      description: Уникальный идентификатор заказа
+      type: integer
+    orders:
+      type: array
+      items:
+        $ref: '#/components/schemas/order'
+    order:
+      type: object
+      required:
+        - id
+        - user_id
+        - service_id
+      properties:
+        id:
+          $ref: '#/components/schemas/order_id'
+        user_id:
+          type: integer
+        service_id:
+          type: integer
     Error:
       type: object
       required:

@@ -1,5 +1,5 @@
-#ifndef AUTHOR_H
-#define AUTHOR_H
+#ifndef SERVICE_H
+#define SERVICE_H
 
 #include <string>
 #include <vector>
