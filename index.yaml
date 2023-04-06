@@ -223,6 +223,13 @@ paths:
   /searchOrder:
     get:
       summary: Поиск Заказов по маске ID пользователя
+      parameters:
+      - name: user_id
+        description: идентификатор пользователя
+        in: query
+        required: true
+        schema:
+          type: integer
       responses:
         '200':
           description: The orders for the provided masks
@@ -246,6 +253,12 @@ paths:
     post:
       summary: Добавление услуги в заказ
       parameters:
+      - name: user_id
+        description: идентификатор пользователя
+        in: query
+        required: true
+        schema:
+          type: integer
       - name: service_id
         description: идентификатор услуги
         in: query

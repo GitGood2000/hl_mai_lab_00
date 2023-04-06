@@ -34,14 +34,8 @@ namespace database
                         << "`user_id` INT NOT NULL,"
                         << "`service_id` INT NOT NULL,"
                         << "PRIMARY KEY (`id`),"
-                        << "KEY `ORD_FK_User_id` (`user_id`),"
-                        << "CONSTRAINT `ORD_FK_user_id` "
-                        << "FOREIGN KEY (`user_id`) "
-                        << "REFERENCES  `User` (`id`),"
-                        << "KEY `ORD_FK_Service_id` (`service_id`),"
-                        << "CONSTRAINT `ORD_FK_service_id` "
-                        << "FOREIGN KEY (`service_id`) "
-                        << "REFERENCES  `Service` (`id`));"
+                        << "KEY `uid` (`user_id`),"
+                        << "KEY `sid` (`service_id`));"
                         << hint,
                         now;
 
@@ -100,7 +94,7 @@ namespace database
             std::vector<Order> result;
             Order a;
             std::string sharding_hint = database::Database::sharding_hint(user_id);
-            std::string select_str = "SELECT id, user_id, service_id FROM `Order` where user_id=?";
+            std::string select_str = "SELECT id, user_id, service_id FROM `Order` where user_id=? ";
             select_str += sharding_hint;
             std::cout << select_str << std::endl;
 
@@ -133,30 +127,28 @@ namespace database
         }
     }
 
-    Order Order::save_to_mysql(long user_id)
+    void Order::save_to_mysql()
     {
 
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
-            std::string sharding_hint = database::Database::sharding_hint(user_id);
+            std::string sharding_hint = database::Database::sharding_hint(_user_id);
 
-            Order ord;
-
-            std::string select_str = "INSERT INTO `Order` (user_id,service_id) VALUES(?, ?)";
+            std::string select_str = "INSERT INTO `Order` (user_id,service_id) VALUES(?, ?) ";
             select_str += sharding_hint;
             std::cout << select_str << std::endl;
 
             insert << select_str,
-                use(user_id),
+                use(_user_id),
                 use(_service_id),
                 now;
 
             Poco::Data::Statement select(session);
             std::string query =  "SELECT LAST_INSERT_ID() "+sharding_hint;
             select << query,
-                into(ord._id),
+                into(_id),
                 range(0, 1); //  iterate over result set one row at a time
 
             if (!select.done())
@@ -165,12 +157,10 @@ namespace database
             }
 
             std::cout << "inserted:" << _id << std::endl;
-            ord._user_id = user_id;
+            //ord._user_id = user_id;
             // ord._service_id = service_id;
 
             std::cout << "inserted:" << _id << std::endl;
-            
-            return ord;
         }
         catch (Poco::Data::MySQL::ConnectionException &e)
         {

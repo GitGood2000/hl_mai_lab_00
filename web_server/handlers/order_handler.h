@@ -47,7 +47,6 @@ using Poco::Util::ServerApplication;
 #include "../../database/order.h"
 #include "../../database/service.h"
 #include "../../database/user.h"
-#include "../../helper.h"
 
 class OrderHandler : public HTTPRequestHandler
 {
@@ -61,23 +60,19 @@ public:
     {
         HTMLForm form(request, request.stream());
 
-        long cur_user_id = TryAuth(request, response);
-
-        if(cur_user_id == 0){
-            //No Auth
-            return;
-        }
-            
-
             if (hasSubstr(request.getURI(), "/searchOrder") && (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET))
             {
-                long user_id = cur_user_id;
+                std::cout << "user_id started";
+                long user_id = atol(form.get("user_id").c_str());
                 try
                 {
+                    std::cout << "search started";
                     Poco::JSON::Array arr;
                     auto results = database::Order::read_by_user_id(user_id);
+                    std::cout << "loop started";
                     for (auto s : results)
                         arr.add(s.toJSON());
+                    std::cout << "loop ended";
                     //response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
                     response.setChunkedTransferEncoding(true);
                     response.setContentType("application/json");
@@ -88,6 +83,7 @@ public:
                 }
                 catch (...)
                 {
+                    std::cout << "error started";
                     response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
                     std::ostream &ostr = response.send();
                     ostr << "{ \"result\": false , \"reason\": \"not found\" }";
@@ -97,19 +93,19 @@ public:
 
             else if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST)
             {
-                long user_id = cur_user_id;
+                //long user_id = atol(form.get("user_id").c_str());
                 
-                if (form.has("service_id"))
+                if (form.has("user_id")&&form.has("service_id"))
                 {
-                    long service_id = atol(form.get("service_id").c_str());
                     database::Order order;
-                    order.service_id() = service_id;
+                    order.user_id() = atol(form.get("user_id").c_str());
+                    order.service_id() = atol(form.get("service_id").c_str());
                     //std::string message;
                     //std::string reason;
 
                     try
                     {
-                        order.save_to_mysql(user_id);
+                        order.save_to_mysql();
                         response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
                         response.setChunkedTransferEncoding(true);
                         response.setContentType("application/json");
