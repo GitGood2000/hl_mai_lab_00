@@ -86,9 +86,11 @@ namespace database
 
     std::vector<Order> Order::read_by_user_id(long user_id)
     {
+        std::cout << "reading started";
         
         try
         {
+            std::cout << "try started";
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement select(session);
             std::vector<Order> result;

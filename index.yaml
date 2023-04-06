@@ -220,7 +220,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /searchOrder:
+  /searchorder:
     get:
       summary: Поиск Заказов по маске ID пользователя
       parameters:

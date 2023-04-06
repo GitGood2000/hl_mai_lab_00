@@ -64,7 +64,7 @@ public:
             return new ServiceHandler(_format);
 
         if (hasSubstr(request.getURI(),"/order") ||
-            hasSubstr(request.getURI(),"/searchOrder")) 
+            hasSubstr(request.getURI(),"/searchorder")) 
             return new OrderHandler(_format);
         
         return new WebPageHandler(_format);

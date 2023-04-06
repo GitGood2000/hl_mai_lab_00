@@ -60,7 +60,7 @@ public:
     {
         HTMLForm form(request, request.stream());
 
-            if (hasSubstr(request.getURI(), "/searchOrder") && (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET))
+            if (form.has("user_id") && (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET))
             {
                 std::cout << "user_id started";
                 long user_id = atol(form.get("user_id").c_str());
