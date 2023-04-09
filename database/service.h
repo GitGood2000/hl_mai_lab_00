@@ -24,6 +24,7 @@ namespace database
             static Service fromJSON(const std::string & str);
 
             long             get_id() const;
+            long             get_user_id() const;
             const std::string &get_name() const;
             const std::string &get_category() const;
             const std::string &get_method() const;
@@ -42,7 +43,7 @@ namespace database
 
             static void init();
             static std::vector<Service> read_all();
-            Service save_to_mysql(long user_id);
+            void save_to_mysql();
 
             Poco::JSON::Object::Ptr toJSON() const;
 

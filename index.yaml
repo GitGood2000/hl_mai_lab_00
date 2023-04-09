@@ -201,6 +201,12 @@ paths:
         required: true
         schema:
           type: string
+      - name: user_id
+        description: идентификатор пользователя
+        in: query
+        required: true
+        schema:
+          type: integer
       responses:
         '200':
           description: Идентификатор, добавленной услуги
@@ -220,7 +226,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /searchorder:
+  /getorders:
     get:
       summary: Поиск Заказов по маске ID пользователя
       parameters:

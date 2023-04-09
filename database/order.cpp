@@ -11,8 +11,6 @@
 
 #include <sstream>
 #include <exception>
-#include <algorithm>
-#include <future>
 
 using namespace Poco::Data::Keywords;
 using Poco::Data::Session;
@@ -25,22 +23,16 @@ namespace database
     {
         try
         {
-            Poco::Data::Session session = database::Database::get().create_session();
 
-            for (auto &hint : database::Database::get_all_hints())
-            {
+            Poco::Data::Session session = database::Database::get().create_session();
             Statement create_stmt(session);
             create_stmt << "CREATE TABLE IF NOT EXISTS `Order` (`id` INT NOT NULL AUTO_INCREMENT,"
                         << "`user_id` INT NOT NULL,"
                         << "`service_id` INT NOT NULL,"
                         << "PRIMARY KEY (`id`),"
-                        << "KEY `uid` (`user_id`),"
-                        << "KEY `sid` (`service_id`));"
-                        << hint,
-                        now;
-
-            std::cout << create_stmt.toString() << std::endl;
-            }
+                        << "KEY `ORD_T_User_id` (`user_id`),"
+                        << "KEY `ORD_FK_Service_id` (`service_id`));",
+                now;
         }
 
         catch (Poco::Data::MySQL::ConnectionException &e)
@@ -86,27 +78,20 @@ namespace database
 
     std::vector<Order> Order::read_by_user_id(long user_id)
     {
-        std::cout << "reading started";
-        
+        std::cout << "proccess started \n";
         try
         {
-            std::cout << "try started";
+            std::cout << "search started \n";
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement select(session);
             std::vector<Order> result;
             Order a;
-            std::string sharding_hint = database::Database::sharding_hint(user_id);
-            std::string select_str = "SELECT id, user_id, service_id FROM `Order` where user_id=? ";
-            select_str += sharding_hint;
-            std::cout << select_str << std::endl;
-
-            select << select_str,
+            select << "SELECT id, user_id, service_id FROM `Order` where user_id=?",
                 into(a._id),
                 into(a._user_id),
                 into(a._service_id),
                 use(user_id),
                 range(0, 1); //  iterate over result set one row at a time
-            
 
             while (!select.done())
             {
@@ -136,20 +121,15 @@ namespace database
         {
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
-            std::string sharding_hint = database::Database::sharding_hint(_user_id);
 
-            std::string select_str = "INSERT INTO `Order` (user_id,service_id) VALUES(?, ?) ";
-            select_str += sharding_hint;
-            std::cout << select_str << std::endl;
-
-            insert << select_str,
+            insert << "INSERT INTO `Order` (user_id,service_id) VALUES(?, ?)",
                 use(_user_id),
-                use(_service_id),
-                now;
+                use(_service_id);
+
+            insert.execute();
 
             Poco::Data::Statement select(session);
-            std::string query =  "SELECT LAST_INSERT_ID() "+sharding_hint;
-            select << query,
+            select << "SELECT LAST_INSERT_ID()",
                 into(_id),
                 range(0, 1); //  iterate over result set one row at a time
 
@@ -158,8 +138,6 @@ namespace database
                 select.execute();
             }
 
-            std::cout << "inserted:" << _id << std::endl;
-            //ord._user_id = user_id;
             // ord._service_id = service_id;
 
             std::cout << "inserted:" << _id << std::endl;
@@ -180,6 +158,16 @@ namespace database
     long Order::get_id() const
     {
         return _id;
+    }
+
+    long Order::get_user_id() const
+    {
+        return _user_id;
+    }
+
+    long Order::get_service_id() const
+    {
+        return _service_id;
     }
 
     long &Order::id()

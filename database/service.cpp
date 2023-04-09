@@ -35,10 +35,7 @@ namespace database
                         << "`price` VARCHAR(256) NULL,"
                         << "`user_id` INT NOT NULL,"
                         << "PRIMARY KEY (`id`),KEY `categ` (`category`),"
-                        << "KEY `FK_User_id` (`user_id`),"
-                        << "CONSTRAINT `FK_user_id` "
-                        << "FOREIGN KEY (`user_id`) "
-                        << "REFERENCES  `User` (`id`));",
+                        << "KEY `T_User_id` (`user_id`));",
                 now;
         }
 
@@ -112,7 +109,7 @@ namespace database
         }
     }
 
-    Service Service::save_to_mysql(long user_id)
+    void Service::save_to_mysql()
     {
         try
         {
@@ -129,13 +126,13 @@ namespace database
                 use(_description),
                 use(_schedule),
                 use(_price),
-                use(user_id);
+                use(_user_id);
 
             insert.execute();
 
             Poco::Data::Statement select(session);
             select << "SELECT LAST_INSERT_ID()",
-                into(serv_user._id),
+                into(_id),
                 range(0, 1); //  iterate over result set one row at a time
 
             if (!select.done())
@@ -143,11 +140,7 @@ namespace database
                 select.execute();
             }
 
-            serv_user._user_id = user_id;
-
             std::cout << "inserted:" << _id << std::endl;
-
-            return serv_user;
         }
         catch (Poco::Data::MySQL::ConnectionException &e)
         {
@@ -197,6 +190,11 @@ namespace database
         return _price;
     }
 
+    long Service::get_user_id() const
+    {
+        return _user_id;
+    }
+
     long &Service::id()
     {
         return _id;
@@ -230,5 +228,10 @@ namespace database
     std::string &Service::price()
     {
         return _price;
+    }
+
+    long &Service::user_id()
+    {
+        return _user_id;
     }
 }

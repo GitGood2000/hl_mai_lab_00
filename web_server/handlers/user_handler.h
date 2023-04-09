@@ -126,23 +126,24 @@ public:
                        HTTPServerResponse &response)
     {
         HTMLForm form(request, request.stream());
-        try
-        {
-            if (form.has("id") && (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET))
+        if (form.has("id") && (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET))
             {
                 long id = atol(form.get("id").c_str());
 
-                std::optional<database::User> result = database::User::read_by_id(id);
-                if (result)
+                try
                 {
-                    response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-                    response.setChunkedTransferEncoding(true);
-                    response.setContentType("application/json");
-                    std::ostream &ostr = response.send();
-                    Poco::JSON::Stringifier::stringify(remove_password(result->toJSON()), ostr);
-                    return;
+                    std::optional<database::User> result = database::User::read_by_id(id);
+                    if (result)
+                    {
+                        response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+                        response.setChunkedTransferEncoding(true);
+                        response.setContentType("application/json");
+                        std::ostream &ostr = response.send();
+                        Poco::JSON::Stringifier::stringify(remove_password(result->toJSON()), ostr);
+                        return;
+                    }
                 }
-                else
+                catch (...)
                 {
                     response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND);
                     response.setChunkedTransferEncoding(true);
@@ -151,7 +152,7 @@ public:
                     root->set("type", "/errors/not_found");
                     root->set("title", "Internal exception");
                     root->set("status", "404");
-                    root->set("detail", "user ot found");
+                    root->set("detail", "user not found");
                     root->set("instance", "/user");
                     std::ostream &ostr = response.send();
                     Poco::JSON::Stringifier::stringify(root, ostr);
@@ -248,28 +249,25 @@ public:
                     }
 
                     if (check_result)
-                    {
-                        user.save_to_mysql();
-                        response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-                        response.setChunkedTransferEncoding(true);
-                        response.setContentType("application/json");
-                        std::ostream &ostr = response.send();
-                        ostr << user.get_id();
-                        return;
-                    }
-                    else
-                    {
-                        response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
-                        std::ostream &ostr = response.send();
-                        ostr << message;
-                        response.send();
-                        return;
-                    }
-                }
+                    try
+                        {
+                            user.save_to_mysql();
+                            response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+                            response.setChunkedTransferEncoding(true);
+                            response.setContentType("application/json");
+                            std::ostream &ostr = response.send();
+                            ostr << user.get_id();
+                            return;
+                        }
+                        catch (...)
+                        {
+                            response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
+                            std::ostream &ostr = response.send();
+                            ostr << message;
+                            response.send();
+                            return;
+                        }
             }
-        }
-        catch (...)
-        {
         }
 
         response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND);

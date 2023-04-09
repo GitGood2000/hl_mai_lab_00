@@ -45,7 +45,6 @@ using Poco::Util::ServerApplication;
 
 #include "../../database/service.h"
 #include "../../database/user.h"
-#include "../../helper.h"
 
 class ServiceHandler : public HTTPRequestHandler
 {
@@ -71,13 +70,6 @@ public:
                        HTTPServerResponse &response)
     {
         HTMLForm form(request, request.stream());
-        
-        long cur_user_id = TryAuth(request, response);
-
-        if(cur_user_id == 0){
-            //No Auth
-            return;
-        }
 
         try
         {
@@ -97,9 +89,8 @@ public:
             else if (hasSubstr(request.getURI(), "/service") &&
                 (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST))
             {
-                long user_id = cur_user_id;
 
-                if (form.has("name") && form.has("category") && form.has("method") && form.has("description") && form.has("schedule") && form.has("price"))
+                if (form.has("name") && form.has("category") && form.has("method") && form.has("description") && form.has("schedule") && form.has("price") && form.has("user_id"))
                 {
                     database::Service service;
                     service.name() = form.get("name");
@@ -108,6 +99,7 @@ public:
                     service.description() = form.get("description");
                     service.schedule() = form.get("schedule");
                     service.price() = form.get("price");
+                    service.user_id() = atol(form.get("user_id").c_str());
 
 
                     bool check_result = true;
@@ -124,7 +116,7 @@ public:
 
                     if (check_result)
                     {
-                        service.save_to_mysql(user_id);
+                        service.save_to_mysql();
                         response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
                         response.setChunkedTransferEncoding(true);
                         response.setContentType("application/json");

@@ -19,6 +19,17 @@
 #include "Poco/Util/Option.h"
 #include "Poco/Util/OptionSet.h"
 #include "Poco/Util/HelpFormatter.h"
+
+#include <Poco/URIStreamFactory.h>
+#include <Poco/URIStreamOpener.h>
+#include <Poco/Net/HTTPSStreamFactory.h>
+#include <Poco/Net/HTTPStreamFactory.h>
+#include <Poco/Base64Encoder.h>
+#include <Poco/Base64Decoder.h>
+
+#include "Poco/URI.h"
+#include "Poco/Net/HTTPSClientSession.h"
+
 #include <iostream>
 #include <iostream>
 #include <fstream>
@@ -47,9 +58,13 @@ using Poco::Util::ServerApplication;
 #include "../../database/order.h"
 #include "../../database/service.h"
 #include "../../database/user.h"
+#include "../../helper.h"
 
 class OrderHandler : public HTTPRequestHandler
 {
+private:
+
+
 public:
     OrderHandler(const std::string &format) : _format(format)
     {
@@ -60,68 +75,63 @@ public:
     {
         HTMLForm form(request, request.stream());
 
-            if (form.has("user_id") && (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET))
-            {
-                std::cout << "user_id started";
+        try
+        {
+            std::cout << "try started \n";
+            if (hasSubstr(request.getURI(), "/getorders") && (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET))
+            { 
+                std::cout << "search started \n";
                 long user_id = atol(form.get("user_id").c_str());
-                try
-                {
-                    std::cout << "search started";
-                    Poco::JSON::Array arr;
-                    auto results = database::Order::read_by_user_id(user_id);
-                    std::cout << "loop started";
-                    for (auto s : results)
-                        arr.add(s.toJSON());
-                    std::cout << "loop ended";
-                    //response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-                    response.setChunkedTransferEncoding(true);
-                    response.setContentType("application/json");
-                    std::ostream &ostr = response.send();
 
-                    Poco::JSON::Stringifier::stringify(arr, ostr);
-                    return;
-                }
-                catch (...)
-                {
-                    std::cout << "error started";
-                    response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
-                    std::ostream &ostr = response.send();
-                    ostr << "{ \"result\": false , \"reason\": \"not found\" }";
-                    response.send();
-                }
+                auto results = database::Order::read_by_user_id(user_id);
+                Poco::JSON::Array arr;
+                for (auto s : results)
+                    arr.add(s.toJSON());
+                response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+                response.setChunkedTransferEncoding(true);
+                response.setContentType("application/json");
+                std::ostream &ostr = response.send();
+                Poco::JSON::Stringifier::stringify(arr, ostr);
             }
 
             else if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST)
             {
-                //long user_id = atol(form.get("user_id").c_str());
-                
-                if (form.has("user_id")&&form.has("service_id"))
+                if (form.has("user_id") && form.has("service_id"))
                 {
+                    long user_id = atol(form.get("user_id").c_str());
+                    long service_id = atol(form.get("service_id").c_str());
                     database::Order order;
-                    order.user_id() = atol(form.get("user_id").c_str());
-                    order.service_id() = atol(form.get("service_id").c_str());
-                    //std::string message;
-                    //std::string reason;
+                    order.user_id() = user_id;
+                    order.service_id() = service_id;
+                    std::string message;
+                    std::string reason;
 
-                    try
-                    {
-                        order.save_to_mysql();
-                        response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
-                        response.setChunkedTransferEncoding(true);
-                        response.setContentType("application/json");
-                        std::ostream &ostr = response.send();
-                        ostr << order.get_id();
-                        return;
-                    }
-                    catch (...)
-                    {
-                        response.setStatus(Poco::Net::HTTPResponse::HTTP_NOT_FOUND);
-                        std::ostream &ostr = response.send();
-                        ostr << "{ \"result\": false , \"reason\": \"exception\" }";
-                        response.send();
-                    }
+                    
+                    order.save_to_mysql();
+                    response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+                    response.setChunkedTransferEncoding(true);
+                    response.setContentType("application/json");
+                    std::ostream &ostr = response.send();
+                    ostr << order.get_id();
+                    return;
                 }
+            }
         }
+        catch (...)
+        {
+        }
+
+        response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND);
+        response.setChunkedTransferEncoding(true);
+        response.setContentType("application/json");
+        Poco::JSON::Object::Ptr root = new Poco::JSON::Object();
+        root->set("type", "/errors/not_found");
+        root->set("title", "Internal exception");
+        root->set("status", Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND);
+        root->set("detail", "request ot found");
+        root->set("instance", "/order");
+        std::ostream &ostr = response.send();
+        Poco::JSON::Stringifier::stringify(root, ostr);
     }
 
 private:
