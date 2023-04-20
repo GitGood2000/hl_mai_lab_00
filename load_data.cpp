@@ -8,38 +8,11 @@
 
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
-#include <Poco/Data/RecordSet.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Dynamic/Var.h>
 
 #include "./database/user.h"
 #include "./database/database.h"
-
-long db_length()
-    {
-        long result = 0;
-        std::vector<std::string> hints = database::Database::get_all_hints();
-        for (const std::string &hint : hints)
-        {
-
-            Poco::Data::Session session = database::Database::get().create_session();
-            Poco::Data::Statement select(session);
-            long a;
-            std::string select_str = "SELECT COUNT(*) FROM User";
-            select_str += hint;
-            select << select_str,
-                Poco::Data::Keywords::into(a),
-                Poco::Data::Keywords::range(0, 1);
-
-            select.execute();
-            Poco::Data::RecordSet rs(select);
-
-            if (rs.moveFirst()) {
-                result += a;
-            }
-        }
-        return result;
-    }
 
 auto main() -> int
 {
@@ -59,14 +32,25 @@ auto main() -> int
     _connection_string+=std::getenv("DB_PASSWORD");
     std::cout << "connection string:" << _connection_string << std::endl;
 
+    //get_all_hints
+    std::vector<std::string> shards;
+        for(size_t i=0;i<=2;++i){
+            std::string shard_name = "-- sharding:";
+            shard_name += std::to_string(i);
+            shards.push_back(shard_name);
+        }
+
+
+
+
     Poco::Data::Session session(
         Poco::Data::SessionFactory::instance().create(
             Poco::Data::MySQL::Connector::KEY, _connection_string));
     std::cout << "session created" << std::endl;
     try
     {
-        for (auto &hint : database::Database::get_all_hints())
-        {
+        std::vector<std::string> hints = shards;
+        for (std::string &hint : hints){
             Poco::Data::Statement create_stmt(session);
             create_stmt << "CREATE TABLE IF NOT EXISTS `User` (`id` INT NOT NULL AUTO_INCREMENT,"
                             << "`total_id` INT NOT NULL,"
@@ -106,10 +90,18 @@ auto main() -> int
             std::string email = object->getValue<std::string>("email");
             std::string login = email;
             std::string password;
-            
-            long db_len = db_length();
-            db_len +=1;
-            std::string sharding_hint = database::Database::sharding_hint(db_len);
+
+            long db_len = i + 1;
+            // sharding_hint
+
+            std::string key;
+
+            key += std::to_string(db_len);
+
+            size_t shard_number = std::hash<std::string>{}(key)%(2+1);
+
+            std::string sharding_hint = "-- sharding:";
+            sharding_hint += std::to_string(shard_number);
 
             std::string select_str = "INSERT INTO User (total_id, first_name,last_name,email,login,password) VALUES(?, ?, ?, ?, ?, ?) ";
             select_str += sharding_hint;
