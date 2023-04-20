@@ -8,11 +8,38 @@
 
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
+#include <Poco/Data/RecordSet.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Dynamic/Var.h>
 
 #include "./database/user.h"
 #include "./database/database.h"
+
+long db_length()
+    {
+        long result = 0;
+        std::vector<std::string> hints = database::Database::get_all_hints();
+        for (const std::string &hint : hints)
+        {
+
+            Poco::Data::Session session = database::Database::get().create_session();
+            Poco::Data::Statement select(session);
+            long a;
+            std::string select_str = "SELECT COUNT(*) FROM User";
+            select_str += hint;
+            select << select_str,
+                Poco::Data::Keywords::into(a),
+                Poco::Data::Keywords::range(0, 1);
+
+            select.execute();
+            Poco::Data::RecordSet rs(select);
+
+            if (rs.moveFirst()) {
+                result += a;
+            }
+        }
+        return result;
+    }
 
 auto main() -> int
 {
@@ -80,7 +107,7 @@ auto main() -> int
             std::string login = email;
             std::string password;
             
-            long db_len = User::db_length();
+            long db_len = db_length();
             db_len +=1;
             std::string sharding_hint = database::Database::sharding_hint(db_len);
 
