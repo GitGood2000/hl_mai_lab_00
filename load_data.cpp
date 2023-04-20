@@ -11,8 +11,8 @@
 #include <Poco/JSON/Parser.h>
 #include <Poco/Dynamic/Var.h>
 
-#include "../database/user.h"
-#include "../database/database.h"
+#include "./database/user.h"
+#include "./database/database.h"
 
 auto main() -> int
 {
