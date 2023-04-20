@@ -11,6 +11,9 @@
 #include <Poco/JSON/Parser.h>
 #include <Poco/Dynamic/Var.h>
 
+#include "user.h"
+#include "database.h"
+
 auto main() -> int
 {
 
@@ -35,16 +38,19 @@ auto main() -> int
     std::cout << "session created" << std::endl;
     try
     {
-        Poco::Data::Statement create_stmt(session);
-        create_stmt << "CREATE TABLE IF NOT EXISTS `User` (`id` INT NOT NULL AUTO_INCREMENT,"
-                        << "`total_id` INT NOT NULL,"
-                        << "`first_name` VARCHAR(256) NOT NULL,"
-                        << "`last_name` VARCHAR(256) NULL,"
-                        << "`login` VARCHAR(256) NULL,"
-                        << "`password` VARCHAR(256) NULL,"
-                        << "`email` VARCHAR(256) NULL,"
-                        << "PRIMARY KEY (`id`),KEY `fn` (`first_name`),KEY `ln` (`last_name`));";
-        create_stmt.execute();
+        for (auto &hint : database::Database::get_all_hints())
+        {
+            Poco::Data::Statement create_stmt(session);
+            create_stmt << "CREATE TABLE IF NOT EXISTS `User` (`id` INT NOT NULL AUTO_INCREMENT,"
+                            << "`total_id` INT NOT NULL,"
+                            << "`first_name` VARCHAR(256) NOT NULL,"
+                            << "`last_name` VARCHAR(256) NULL,"
+                            << "`login` VARCHAR(256) NULL,"
+                            << "`password` VARCHAR(256) NULL,"
+                            << "`email` VARCHAR(256) NULL,"
+                            << "PRIMARY KEY (`id`),KEY `fn` (`first_name`),KEY `ln` (`last_name`));";
+            create_stmt.execute();
+        }
         std::cout << "table created" << std::endl;
 
         Poco::Data::Statement truncate_stmt(session);
@@ -73,9 +79,18 @@ auto main() -> int
             std::string email = object->getValue<std::string>("email");
             std::string login = email;
             std::string password;
+            
+            long db_len = User::db_length();
+            db_len +=1;
+            std::string sharding_hint = database::Database::sharding_hint(db_len);
+
+            std::string select_str = "INSERT INTO User (total_id, first_name,last_name,email,login,password) VALUES(?, ?, ?, ?, ?, ?) ";
+            select_str += sharding_hint;
+            std::cout << select_str << std::endl;
 
             Poco::Data::Statement insert(session);
-            insert << "INSERT INTO User (first_name,last_name,email,login,password) VALUES(?,?, ?, ?, ?)",
+            insert << select_str,
+                Poco::Data::Keywords::use(db_len),
                 Poco::Data::Keywords::use(first_name),
                 Poco::Data::Keywords::use(last_name),
                 Poco::Data::Keywords::use(email),
