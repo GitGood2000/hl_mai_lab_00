@@ -60,13 +60,13 @@ namespace database
         }
     }
     
-    std::optional<User> User::read_from_cache_by_id(long id)
+    std::optional<User> User::read_from_cache_by_id(long total_id)
     {
 
         try
         {
             std::string result;
-            if (database::Cache::get().get(id, result))
+            if (database::Cache::get().get(total_id, result))
                 return fromJSON(result);
             else
                 return std::optional<User>();
@@ -83,7 +83,7 @@ namespace database
         std::stringstream ss;
         Poco::JSON::Stringifier::stringify(toJSON(), ss);
         std::string message = ss.str();
-        database::Cache::get().put(_id, message);
+        database::Cache::get().put(_total_id, message);
     }
 
     Poco::JSON::Object::Ptr User::toJSON() const
